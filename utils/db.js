@@ -13,6 +13,7 @@ class DBClient {
         // Set host, port, and database based on environment variables
         this.client = new MongoClient(url, { useUnifiedTopology: true });
         this.client.connect();
+        this.database = DATABASE;
     }
 
     //checks if the mongo client is connected succesfully
@@ -40,6 +41,36 @@ class DBClient {
             return await files.countDocuments();
         } catch (err) {
             console.error('Error counting documents in "files" collection');
+        }
+    }
+
+    //gets the user from database matching the email
+    async getUserWithEmail(email) {
+        try {
+            const db = this.client.db(this.database);
+            const users = db.collection('users');
+            const result = await users.findOne({ email: email });
+            return result;
+        } catch (err) {
+            throw Error('Error occured while finding user in "users" collection');
+        }
+    }
+
+    //creates new user
+    async createUser(email, hashedPassword) {
+
+        //store user
+        try {
+            const db = this.client.db(this.database);
+            const users = db.collection('users');
+            await users.insertOne({ email: email, password: hashedPassword });
+
+            //get the user and return the user object
+            const user = await users.findOne({ email: email }, { projection: { _id: 1 } });
+            return user;
+
+        } catch (err) {
+            throw Error('Error occured while finding user in "users" collection');
         }
     }
 }
