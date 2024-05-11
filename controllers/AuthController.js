@@ -11,10 +11,9 @@ export async function getConnect(req, res) {
 
     const base64Credentials = authHeader.split(' ')[1];
     const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-    const [email, password] = credentials.split(':');
+    const email = credentials.split(':')[0];
 
     const user = await dbClient.getUserWithEmail(email);
-
     // user doesnt exist
     if (!user) {
         return res.status(401).send({ error: 'Unauthorized' });

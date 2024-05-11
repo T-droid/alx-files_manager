@@ -47,12 +47,11 @@ export async function getMe(req, res) {
     }
 
     // returns the user object
-    const user = await dbClient.getUserWithEmail(userId);
+    const user = await dbClient.getUserWithId(userId);
 
     if (!user) {
         return res.status(401).send({ error: 'Unauthorized' });
     }
 
-    return res.send({ id: user.id, email: user.email });
-
+    return res.status(200).send({ id: user._id, email: user.email });
 }

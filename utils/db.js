@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 
 //get environmental variables
 const HOST = process.env.DB_HOST || 'localhost';
@@ -50,6 +50,18 @@ class DBClient {
             const db = this.client.db(this.database);
             const users = db.collection('users');
             const result = await users.findOne({ email: email });
+            return result;
+        } catch (err) {
+            throw Error('Error occured while finding user in "users" collection');
+        }
+    }
+
+    async getUserWithId(id) {
+        // get user details from id
+        try {
+            const db = this.client.db(this.database);
+            const users = db.collection('users');
+            const result = await users.findOne({ _id: ObjectId(id) });
             return result;
         } catch (err) {
             throw Error('Error occured while finding user in "users" collection');
