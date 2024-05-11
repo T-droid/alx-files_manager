@@ -1,4 +1,5 @@
 import dbClient from '../utils/db';
+import redisClient from '../utils/redis';
 const crypto = require('crypto');
 
 export async function postNew(req, res) {
@@ -18,10 +19,10 @@ export async function postNew(req, res) {
 
     const hshPassword = encryptPassword(password)
     const user = await dbClient.createUser(email, hshPassword);
-    return res.status(201).json({email: email, id: user._id});
+    return res.status(201).send({email: email, id: user._id});
     } catch (error) {
         console.error(error);
-        return res.status(500).json({error: 'server error'});
+        return res.status(500).send({error: 'server error'});
     }
 }
 
@@ -30,4 +31,28 @@ function encryptPassword(password) {
     sha1.update(password);
     const hashedPassword = sha1.digest('hex');
     return hashedPassword;
+}
+
+export async function getMe(req, res) {
+    const token = req.headers['x-token'];
+    if (!token) {
+        return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const key = `auth_${token}`;
+    const userId = await redisClient.get(key); // get user id from token
+
+    if (!userId) {
+        return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    // returns the user object
+    const user = await dbClient.getUserWithEmail(userId);
+
+    if (!user) {
+        return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    return res.send({ id: user.id, email: user.email });
+
 }
