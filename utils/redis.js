@@ -1,17 +1,24 @@
 import redis from 'redis';
-import { promisify } from 'util'
+import { promisify } from 'util';
+
 class RedisClient {
     constructor() {
         this.client = redis.createClient();
 
+        this.changeStatus = true;
+
         this.client.on('error', (err) => {
             console.error('Redis connection error', err);
+            this.changeStatus = false;
+
         });
+
     }
 
     isAlive() {
         // returns true if client is connected
-        return this.client.connected;
+        return this.changeStatus;
+
     }
 
     async get(key) {
