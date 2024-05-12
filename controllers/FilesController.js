@@ -184,3 +184,55 @@ export async function putUnpublish( req, res) {
         return res.status(500).json({ error: 'Internal server error' });
     }
 }
+
+export async function getShow(req, res) {
+    // retrieve file based on file ID
+    const token = req.headers['x-token'];
+    const fileId = req.params.id;
+    const userId = await redisClient.get(`auth_${token}`);
+    if(!userId) {
+        res.status(401).send({'error': "Unauthorized"});
+    }
+    try{
+        const file = await dbClient.findFileById(fileId);
+        const fileFound = (file.userId === userId);
+
+        const msg = {
+            "id": file._id,"userId": file.userId,
+            "name": file.name,"type": file.type,
+            "isPublic": file.isPublic,"parentId": file.parentId
+        }
+        if (fileFound) {
+            res.status(200).send(msg);
+        } else{
+            res.status(404).send({'error': "Not found"});
+        }
+
+    } catch(error) {
+        res.status(404).send({'error': "Not found"});
+    }
+    
+}
+
+export async function getIndex(req, res) {
+    // retrieve all users file documents for a specific parentId and with pagination
+    const token = req.headers['x-token'];
+    const userId = await redisClient.get(`auth_${token}`);
+    const parentId = req.query.parentId || 0;
+    const page = req.query.page || 0;
+    const pageSize = 20;
+    const skip = parseInt(page) * pageSize;
+
+    if(!userId) {
+        res.status(401).send({ 'error': 'Unauthorized'});
+    } else {
+        try{
+            const results = await dbClient.aggregateFiles(userId, parentId, skip, pageSize);
+            res.status(200).send(results);
+        } catch(error) {
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+
+
+}
