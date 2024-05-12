@@ -109,6 +109,31 @@ class DBClient {
             throw Error('Error occured while finding user in "users" collection');
         }
     }
+
+    async aggregateFiles(userId, parentId, skip, limit) {
+        const pipeline = [
+            // Match files belonging to the specified user and parent folder
+            {
+                $match: {
+                    userId: userId,
+                    parentId: parentId
+                }
+            },
+            // Skip documents based on pagination
+            { $skip: skip },
+            // Limit the number of documents per page
+            { $limit: limit }
+        ];
+    
+        try {
+            const db = this.client.db(this.database);
+            const filesCollection = db.collection('files');
+            const result = await filesCollection.aggregate(pipeline).toArray();
+            return result;
+        } catch (err) {
+            throw new Error('Error aggregating files');
+        }
+    }    
 }
 
 const dbClient = new DBClient();

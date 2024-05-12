@@ -131,6 +131,24 @@ export async function getShow(req, res) {
     
 }
 
-export function getIndex(req, res) {
+export async function getIndex(req, res) {
+    // retrieve all users file documents for a specific parentId and with pagination
+    const token = req.headers['x-token'];
+    const userId = await redisClient.get(`auth_${token}`);
+    const parentId = req.query.parentId || 0;
+    const page = req.query.page || 0;
+    const pageSize = 20;
+    const skip = parseInt(page) * pageSize;
+
+    if(!userId) {
+        res.status(401).send({ 'error': 'Unauthorized'});
+    } else {
+        try{
+            const results = await dbClient.aggregateFiles(userId, parentId, skip, pageSize);
+            res.status(200).send(results);
+        } catch(error) {
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    }
 
 }
