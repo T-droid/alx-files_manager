@@ -19,7 +19,7 @@ export async function postNew(req, res) {
 
     const hshPassword = encryptPassword(password)
     const user = await dbClient.createUser(email, hshPassword);
-    return res.status(201).send({email: email, id: user._id});
+    return res.status(201).send({id: user._id, email: email});
     } catch (error) {
         console.error(error);
         return res.status(500).send({error: 'server error'});

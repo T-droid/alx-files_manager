@@ -14,6 +14,7 @@ class DBClient {
         this.client = new MongoClient(url, { useUnifiedTopology: true });
         this.client.connect();
         this.database = DATABASE;
+        this.host = HOST;
     }
 
     //checks if the mongo client is connected succesfully
@@ -41,6 +42,28 @@ class DBClient {
             return await files.countDocuments();
         } catch (err) {
             console.error('Error counting documents in "files" collection');
+        }
+    }
+
+    //looks for parent file by id
+    async findFileById(id) {
+        try {
+            const db = this.client.db(this.database);
+            const files = db.collection('files');
+            return await files.find({_id: id});
+        } catch (err) {
+            throw Error('Cant find file by "id"');
+        }
+    }
+
+    //create new file
+    async createNewFile(fileObject) {
+        try {
+            const db = this.client.db(this.database);
+            const files = db.collection('files');
+            return await files.insertOne(fileObject);
+        } catch (err) {
+            throw Error('Cant create new file');
         }
     }
 
