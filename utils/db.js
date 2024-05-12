@@ -67,6 +67,28 @@ class DBClient {
         }
     }
 
+    //get file linked to user by user_id
+    async findFileByUserId(userId) {
+        try {
+            const db = this.client.db(this.database);
+            const files = db.collection('files');
+            return await files.findOne({userId: userId});
+        } catch (err) {
+            throw Error('Error occured while looking for file with "userId"');
+        }
+    }
+
+    //update or replace in file
+    async replaceValue(idObject, updatedObject) {
+        try {
+            const db = this.client.db(this.database);
+            const files = db.collection('files');
+            return await files.replaceOne(idObject, updatedObject);
+        } catch (err) {
+            throw Error('Error occured while updating collection files');
+        }
+    }
+
     //gets the user from database matching the email
     async getUserWithEmail(email) {
         try {

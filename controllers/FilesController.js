@@ -10,7 +10,6 @@ const asyncWriteFile = promisify(fs.writeFile);
 export async function postUpload(req, res) {
     const { name, type, parentId = 0, isPublic = false, data } = req.body;
     const token = req.headers['x-token'];
-    console.log(token);
     const key = `auth_${token}`;
 
     //retrieve user id from redis
@@ -101,4 +100,87 @@ export async function postUpload(req, res) {
         res.status(500).json({ error: 'Internal server error' });
     }
 
+}
+
+
+export async function putPublish(req, res) {
+    const { id } = req.params;
+    const token = req.headers['x-token'];
+    const key = `auth_${token}`;
+
+    //retrieve user id from redis
+    let user_id;
+    try {
+        user_id = await redisClient.get(key);
+        if (!user_id) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    //get the file linked to this user
+    let file;
+    try {
+        file = await dbClient.findFileByUserId(user_id);
+        if (!file) {
+            return res.status(404).json({error: 'Not found'});
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    //update isPublic
+    file.isPublic = true;
+
+    try {
+        const updatedFile = await dbClient.replaceValue({_id: file._id}, file);
+        return res.status(200).send(updatedFile);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+export async function putUnpublish( req, res) {
+    const { id } = req.params;
+    const token = req.headers['x-token'];
+    const key = `auth_${token}`;
+
+    //retrieve user id from redis
+    let user_id;
+    try {
+        user_id = await redisClient.get(key);
+        if (!user_id) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    //get the file linked to this user
+    let file;
+    try {
+        file = await dbClient.findFileByUserId(user_id);
+        if (!file) {
+            return res.status(404).json({error: 'Not found'});
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    //update isPublic
+    file.isPublic = false;
+
+    try {
+        const updatedFile = await dbClient.replaceValue({_id: file._id}, file);
+        return res.status(200).send(updatedFile);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 }
