@@ -50,7 +50,8 @@ class DBClient {
         try {
             const db = this.client.db(this.database);
             const files = db.collection('files');
-            return await files.find({_id: id});
+            const results =  await files.findOne({_id: ObjectId(id)}); // use objectid
+            return results;
         } catch (err) {
             throw Error('Cant find file by "id"');
         }

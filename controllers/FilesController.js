@@ -102,3 +102,35 @@ export async function postUpload(req, res) {
     }
 
 }
+export async function getShow(req, res) {
+    // retrieve file based on file ID
+    const token = req.headers['x-token'];
+    const fileId = req.params.id;
+    const userId = await redisClient.get(`auth_${token}`);
+    if(!userId) {
+        res.status(401).send({'error': "Unauthorized"});
+    }
+    try{
+        const file = await dbClient.findFileById(fileId);
+        const fileFound = (file.userId === userId);
+
+        const msg = {
+            "id": file._id,"userId": file.userId,
+            "name": file.name,"type": file.type,
+            "isPublic": file.isPublic,"parentId": file.parentId
+        }
+        if (fileFound) {
+            res.status(200).send(msg);
+        } else{
+            res.status(404).send({'error': "Not found"});
+        }
+
+    } catch(error) {
+        res.status(404).send({'error': "Not found"});
+    }
+    
+}
+
+export function getIndex(req, res) {
+
+}
