@@ -1,10 +1,11 @@
-const redisClient = require('../utils/redis');
+import redisClient from '../utils/redis';
 const dbClient = require('../utils/db');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const fs = require('fs');
 const { promisify } = require('util');
 const asyncWriteFile = promisify(fs.writeFile);
+
 
 export async function postUpload(req, res) {
     const { token, name, type, parentId = 0, isPublic = false, data } = req.body;
