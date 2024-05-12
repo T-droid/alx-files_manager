@@ -87,10 +87,18 @@ export async function postUpload(req, res) {
     }
     try {
         const createdFile = await dbClient.createNewFile(newFile);
-        return res.status(201).send(createdFile);
+        // return only needed data not the whole db results
+        const neededData = createdFile.ops;
+        
+        const msg = {
+            "id": neededData[0]._id,"userId": neededData[0].userId,
+            "name": neededData[0].name,"type": neededData[0].type,
+            "isPublic": neededData[0].isPublic,"parentId": neededData[0].parentId
+        }
+        res.status(201).send(msg);
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Internal server error' });
     }
 
 }
