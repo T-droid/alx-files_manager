@@ -8,7 +8,9 @@ const asyncWriteFile = promisify(fs.writeFile);
 
 
 export async function postUpload(req, res) {
-    const { token, name, type, parentId = 0, isPublic = false, data } = req.body;
+    const { name, type, parentId = 0, isPublic = false, data } = req.body;
+    const token = req.headers['x-token'];
+    console.log(token);
     const key = `auth_${token}`;
 
     //retrieve user id from redis
