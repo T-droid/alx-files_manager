@@ -197,13 +197,25 @@ export async function getShow(req, res) {
     // retrieve file based on file ID
     const token = req.headers['x-token'];
     const fileId = req.params.id;
+    const { size } = req.query;
+
     const userId = await redisClient.get(`auth_${token}`);
     if(!userId) {
         res.status(401).send({'error': "Unauthorized"});
     }
+
+    
     try{
         const file = await dbClient.findFileById(fileId);
         const fileFound = (file.userId === userId);
+
+        if (size) {
+            if (!['500', '250', '100'].includes(size)) {
+                return res.status(400).json({error: 'Invalid size parameter'});
+            }
+            await fs.access(file.localPath);
+            return res.sendFile(file.localPath);
+        }
 
         const msg = {
             "id": file._id,"userId": file.userId,
