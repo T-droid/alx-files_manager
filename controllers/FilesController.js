@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { promisify } = require('util');
 const asyncWriteFile = promisify(fs.writeFile);
+const bull = require('bull');
 
 
 export async function postUpload(req, res) {
@@ -47,6 +48,8 @@ export async function postUpload(req, res) {
     if (!data && type !== 'folder') {
         return res.status(400).json({error: 'Missing data'});
     }
+    //create a queue
+    const queue = new bull('fileQueue');
 
     //check if parent is valid
     if (parentId !== 0) {
@@ -86,6 +89,10 @@ export async function postUpload(req, res) {
     }
     try {
         const createdFile = await dbClient.createNewFile(newFile);
+        if (type === 'image') {
+            queue.add({userId: createdFile.userId, fileId: createdFile._id});
+
+        }
         // return only needed data not the whole db results
         const neededData = createdFile.ops;
         

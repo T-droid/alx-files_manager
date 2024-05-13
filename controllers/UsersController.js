@@ -1,6 +1,8 @@
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 const crypto = require('crypto');
+const bull = require('bull');
+
 
 export async function postNew(req, res) {
     try {
@@ -17,8 +19,12 @@ export async function postNew(req, res) {
         return res.status(400).json({error: 'Already exist'});
     }
 
+    //create queue
+    const queue = new bull('userQueue');
+
     const hshPassword = encryptPassword(password)
     const user = await dbClient.createUser(email, hshPassword);
+    queue.add({userId: user._id});
     return res.status(201).send({id: user._id, email: email});
     } catch (error) {
         console.error(error);
