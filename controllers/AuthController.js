@@ -3,7 +3,7 @@ import redisClient from '../utils/redis';
 import {v4} from 'uuid';
 
 export async function getConnect(req, res) {
-    const authHeader = req.headers.authorization;
+    const authHeader = req.headers['authorization'];
 
     if (!authHeader || !authHeader.startsWith('Basic ')) {
         return res.status(401).send({ 'error': 'Unauthorized' });
