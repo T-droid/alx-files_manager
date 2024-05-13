@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { promisify } = require('util');
 const asyncWriteFile = promisify(fs.writeFile);
+const mime = require('mime-types');
 
 
 export async function postUpload(req, res) {
@@ -234,5 +235,47 @@ export async function getIndex(req, res) {
         }
     }
 
+
+}
+
+export async function getFile(req, res) {
+    /* TODO: readFile, check mimetype, check user 
+     * return the content of the file based on the fileID
+     * checks if file is not public are you the author so that it displays content
+     */
+    const fileId = req.params.id;
+    const token = req.headers['x-token'];
+
+    try {
+        const file = await dbClient.findFileById(fileId);
+        const userId = await redisClient.get(`auth_${token}`);
+        const userIsOwner = (file.userId === userId);
+
+        if (!file.isPublic && !token || !userIsOwner) {
+            return res.status(404).send({'error': 'Not found'});
+        }
+        if(file.type === 'folder') {
+            return res.status(400).send({'error': 'A folder doesn\'t have content'});
+        }
+
+        // Check if file is locally present
+        if (!fs.existsSync(file.localPath)) {
+            return res.status(404).send({ 'error' : 'Not found' });
+        }
+        const mimeType = mime.lookup(file.name); // the type of file
+
+        // Read and return file content with correct MIME-type
+        fs.readFile(file.localPath, (err, data) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send({ 'error': 'Internal server error' });
+            }
+            res.setHeader('Content-Type', mimeType);
+            return res.send(data);
+        });
+
+    } catch (error) {
+        return res.status(404).send({'error': 'Not found'});
+    }
 
 }
