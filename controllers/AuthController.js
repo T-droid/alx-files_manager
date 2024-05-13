@@ -6,7 +6,7 @@ export async function getConnect(req, res) {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Basic ')) {
-        return res.status(401).send({ error: 'Unauthorized' });
+        return res.status(401).send({ 'error': 'Unauthorized' });
     }
 
     const base64Credentials = authHeader.split(' ')[1];
@@ -16,7 +16,7 @@ export async function getConnect(req, res) {
     const user = await dbClient.getUserWithEmail(email);
     // user doesnt exist
     if (!user) {
-        return res.status(401).send({ error: 'Unauthorized' });
+        return res.status(401).send({ 'error': 'Unauthorized' });
     }
 
     // create the uuid
