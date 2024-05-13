@@ -14,7 +14,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "bull": "^3.16.0",
+        "bull": "^3.29.3",
         "chai-http": "^4.3.0",
         "express": "^4.17.1",
         "image-thumbnail": "^1.0.10",
@@ -22,7 +22,9 @@
         "mongodb": "^3.5.9",
         "mongoose": "^8.3.4",
         "redis": "^2.8.0",
+        "semver": "^7.6.2",
         "sha1": "^1.1.1",
+        "sharp": "^0.33.3",
         "uuid": "^8.2.0"
     },
     "devDependencies": {
